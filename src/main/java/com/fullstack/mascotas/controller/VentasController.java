@@ -87,7 +87,7 @@ public class VentasController {
         }
 
         if (!ventas.isEmpty()){
-            int cantidad = ventas.size();z
+            int cantidad = ventas.size();
             int ingresos = ventas.stream().mapToInt(Venta::getTotal).sum();
 
             GananciasDTO ganancias = new GananciasDTO(cantidad, ingresos, ventas);
