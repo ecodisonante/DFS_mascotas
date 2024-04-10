@@ -1,14 +1,33 @@
 package com.fullstack.mascotas.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
-@AllArgsConstructor
+@Data
+
+@Entity
+@Table(name = "producto")
 public class Producto {
 
-    @Getter private int id;
-    @Getter private String nombre;
-    @Getter private Categoria categoria;
-    @Getter private int valor;
-    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(name = "nombre")
+    private String nombre;
+
+    @Column(name = "valor")
+    private long valor;
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
 }
