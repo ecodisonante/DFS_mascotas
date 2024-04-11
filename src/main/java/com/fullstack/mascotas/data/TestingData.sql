@@ -1,51 +1,66 @@
+-- drop table detalle_venta;
+-- drop table venta;
+-- drop table producto;
+-- drop table categoria;
+-- drop table hte_categoria;
+-- drop table hte_venta;
+-- drop table hte_producto;
+
+-- drop sequence categoria_seq;
+-- drop sequence producto_seq;
+-- drop sequence venta_seq;
+
+
+
+
 /**
  * CATEGORIAS
  */
 
-INSERT INTO categoria (id, nombre) VALUES (1, 'Alimentos');
-INSERT INTO categoria (id, nombre) VALUES (2, 'Utencilios');
-INSERT INTO categoria (id, nombre) VALUES (3, 'Medicamentos');
+INSERT INTO categoria (nombre) VALUES ('Alimentos');
+INSERT INTO categoria (nombre) VALUES ('Utencilios');
+INSERT INTO categoria (nombre) VALUES ('Medicamentos');
 
 /**
  * PRODUCTOS
  */
 
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (1, 'Comida para perros 1kg', 1, 2500);
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (2, 'Comida para gatos 1kg', 1, 4200);
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (3, 'Comida para erizos 100g', 1, 5000);
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (4, 'Correa para perros', 2, 2000);
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (5, 'Collar para gatos', 2, 3000);
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (6, 'Cama para erizos', 2, 2700);
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (7, 'Antipulgas para perros pipeta', 3, 7500);
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (8, 'Shampoo para gatos 250ml', 3, 12000);
-INSERT INTO producto (id, nombre, categoria_id, valor) VALUES (9, 'Vitaminas para erizos 100mg', 3, 15000);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Comida para perros 1kg', 1, 2500);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Comida para gatos 1kg', 1, 4200);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Comida para erizos 100g', 1, 5000);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Correa para perros', 2, 2000);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Collar para gatos', 2, 3000);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Cama para erizos', 2, 2700);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Antipulgas para perros pipeta', 3, 7500);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Shampoo para gatos 250ml', 3, 12000);
+INSERT INTO producto (nombre, categoria_id, valor) VALUES ('Vitaminas para erizos 100mg', 3, 15000);
 
 /**
  * VENTAS
  */
 
 -- ventas del dia 24 marzo
-INSERT INTO venta (id, fecha, total) VALUES (1, TO_DATE('2024/03/24 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (2, TO_DATE('2024/03/24 12:10:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (3, TO_DATE('2024/03/24 12:50:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (4, TO_DATE('2024/03/24 14:15:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (5, TO_DATE('2024/03/24 16:05:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/24 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/24 12:10:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/24 12:50:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/24 14:15:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/24 16:05:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
 
 -- Ventas otros días del mes
-INSERT INTO venta (id, fecha, total) VALUES (6, TO_DATE('2024/03/22 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (7, TO_DATE('2024/03/22 15:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (8, TO_DATE('2024/03/18 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (9, TO_DATE('2024/03/15 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (10, TO_DATE('2024/03/04 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/22 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/22 15:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/18 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/15 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/03/04 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
 
 -- Ventas año 2024
-INSERT INTO venta (id, fecha, total) VALUES (11, TO_DATE('2024/02/24 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (12, TO_DATE('2024/02/19 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (13, TO_DATE('2024/02/14 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (14, TO_DATE('2024/02/08 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (15, TO_DATE('2024/01/30 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (16, TO_DATE('2024/01/18 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
-INSERT INTO venta (id, fecha, total) VALUES (17, TO_DATE('2024/01/08 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/02/24 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/02/19 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/02/14 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/02/08 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/01/30 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/01/18 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
+INSERT INTO venta (fecha, total) VALUES (TO_DATE('2024/01/08 10:30:00', 'YYYY/MM/DD HH24:MI:SS'), 0);
 
 /**
  * DETALLE
