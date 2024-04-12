@@ -3,6 +3,7 @@ package com.fullstack.mascotas.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,7 +25,7 @@ public class Venta {
     @Column(name = "fecha")
     private LocalDateTime fecha;
 
-    @OneToMany(mappedBy = "venta")
+    @OneToMany(mappedBy = "ventaId", cascade = CascadeType.REMOVE)
     private List<DetalleVenta> detalle;
 
     @Column(name = "total")
