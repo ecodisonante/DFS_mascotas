@@ -34,7 +34,7 @@ public class CategoriaController {
         if (!categorias.isEmpty())
             return ResponseEntity.ok(categorias);
         else
-            return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "No existe la categoria con el id "));
+            return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "No hay categorias ingresadas"));
     }
 
     @GetMapping("/{id}")
