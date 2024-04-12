@@ -31,4 +31,8 @@ public class Venta {
     @Column(name = "total")
     private long total;
 
+    public VentaDto toDto() {
+        return new VentaDto(id, fecha, detalle.size(), total);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.fullstack.mascotas.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fullstack.mascotas.service.IVentaService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.fullstack.mascotas.model.Venta;
+import com.fullstack.mascotas.model.GananciasDto;
 import com.fullstack.mascotas.model.ResponseDTO;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,13 +31,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class VentaController {
 
     @Autowired
-    IVentaService _service;
+    IVentaService ventaService;
 
     @GetMapping
     public ResponseEntity<Object> getVentasList() {
-        List<Venta> ventas = _service.getAllVentas();
+        List<Venta> ventas = ventaService.getAllVentas();
         if (!ventas.isEmpty())
-            return ResponseEntity.ok(ventas);
+            return ResponseEntity.ok(ventas.stream().map(Venta::toDto).toList());
         else
             return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "No hay ventas ingresadas"));
     }
@@ -40,7 +45,7 @@ public class VentaController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getVenta(@PathVariable Long id) {
         try {
-            Optional<Venta> venta = _service.getVentaById(id);
+            Optional<Venta> venta = ventaService.getVentaById(id);
 
             if (!venta.isPresent())
                 return ResponseEntity.badRequest().body(
@@ -54,6 +59,39 @@ public class VentaController {
         }
     }
 
+    @GetMapping("/fecha")
+    public ResponseEntity<Object> getVentasFecha(HttpServletRequest request) {
+
+        // recibir parametros
+        String yearParam = request.getParameter("year");
+        String monthParam = request.getParameter("month");
+        String dayParam = request.getParameter("day");
+
+        int year, month, day;
+        List<Venta> ventas = new ArrayList<>();
+
+        try {
+            year = yearParam != null ? Integer.parseInt(yearParam) : 0;
+            month = monthParam != null ? Integer.parseInt(monthParam) : 0;
+            day = dayParam != null ? Integer.parseInt(dayParam) : 0;
+
+            ventas = ventaService.getVentasByDate(year, month, day);
+
+            if (!ventas.isEmpty())
+                return ResponseEntity.ok(
+                        new GananciasDto(
+                                ventas.size(),
+                                ventas.stream().mapToLong(Venta::getTotal).sum(),
+                                ventas.stream().map(Venta::toDto).toList()));
+            else
+                return ResponseEntity.ok("No hay ventas registradas en el rango solicitado");
+
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("Parametros incorrectos");
+        }
+
+    }
+
     @PostMapping
     public ResponseEntity<Object> createVenta(@RequestBody Venta venta) {
         // validar datos
@@ -64,7 +102,7 @@ public class VentaController {
                     HttpStatus.BAD_REQUEST.value(), "Detalle de venta no puede estar vacío"));
 
         try {
-            return ResponseEntity.ok(_service.createVenta(venta));
+            return ResponseEntity.ok(ventaService.createVenta(venta));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
@@ -82,7 +120,7 @@ public class VentaController {
                     HttpStatus.BAD_REQUEST.value(), "Detalle de venta no puede estar vacío"));
 
         try {
-            return ResponseEntity.ok(_service.updateVenta(id, venta));
+            return ResponseEntity.ok(ventaService.updateVenta(id, venta));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
@@ -92,7 +130,7 @@ public class VentaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteVenta(@PathVariable Long id) {
         try {
-            _service.deleteVenta(id);
+            ventaService.deleteVenta(id);
             return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "Venta eliminada."));
 
         } catch (Exception e) {

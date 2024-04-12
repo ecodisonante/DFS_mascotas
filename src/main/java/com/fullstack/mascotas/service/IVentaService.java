@@ -10,6 +10,8 @@ public interface IVentaService {
 
     Optional<Venta> getVentaById(Long id);
 
+    List<Venta> getVentasByDate(int year, int month, int day) throws Exception;
+
     Venta createVenta(Venta venta) throws Exception;
 
     Venta updateVenta(Long id, Venta venta) throws Exception;

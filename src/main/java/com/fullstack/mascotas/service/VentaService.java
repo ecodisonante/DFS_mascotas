@@ -1,5 +1,6 @@
 package com.fullstack.mascotas.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,37 @@ public class VentaService implements IVentaService {
     @Override
     public Optional<Venta> getVentaById(Long id) {
         return ventaRepository.findById(id);
+    }
+
+    @Override
+    public List<Venta> getVentasByDate(int year, int month, int day) throws Exception {
+
+        String filtro = "";
+        String fecha = "";
+
+        if (day > 0) {
+            if (year == 0)
+                year = LocalDateTime.now().getYear();
+            if (month == 0)
+                month = LocalDateTime.now().getMonthValue();
+
+            fecha = String.format("%d-%02d-%02d", new Object[] { year, month, day });
+            filtro = "yyyy-mm-dd";
+        } else if (month > 0) {
+            filtro = "mm";
+            if (year == 0)
+                year = LocalDateTime.now().getYear();
+
+            fecha = String.format("%d-%02d", new Object[] { year, month });
+            filtro = "yyyy-mm";
+        } else if (year > 0) {
+            fecha = String.format("%04d", year);
+            filtro = "yyyy";
+        } else {
+            throw new Exception("Debe escoger dia, mes o fecha validos.");
+        }
+        System.out.println(fecha + filtro);
+        return ventaRepository.findByDate(fecha, filtro);// findByDate(fecha, filtro);
     }
 
     @Override
