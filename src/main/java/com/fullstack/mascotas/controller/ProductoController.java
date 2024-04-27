@@ -2,8 +2,12 @@ package com.fullstack.mascotas.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,14 +29,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ProductoController {
 
     @Autowired
-    IProductoService _service;
+    IProductoService service;
+
+    private static final String PRODUCTOS = "lista-productos";
 
     @GetMapping
     public ResponseEntity<Object> getProductosList() {
-        List<Producto> productos = _service.getAllProductos();
+        List<Producto> productos = service.getAllProductos();
 
-        if (!productos.isEmpty())
-            return ResponseEntity.ok(productos);
+        if (!productos.isEmpty()) {
+            var productoRes = productos.stream()
+                    .map(cat -> EntityModel.of(cat,
+                            WebMvcLinkBuilder
+                                    .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getProducto(cat.getId()))
+                                    .withSelfRel()))
+                    .collect(Collectors.toList());
+
+            WebMvcLinkBuilder linkTo = WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getProductosList());
+
+            return ResponseEntity.ok(CollectionModel.of(productoRes, linkTo.withRel("productos")));
+        }
+
         else
             return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "No hay productos ingresados"));
     }
@@ -40,13 +58,23 @@ public class ProductoController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getProducto(@PathVariable Long id) {
         try {
-            Optional<Producto> producto = _service.getProductoById(id);
+            Optional<Producto> producto = service.getProductoById(id);
 
-            if (!producto.isPresent())
+            if (producto.isPresent()) {
+                var productoRes = EntityModel.of(producto.get(),
+                        WebMvcLinkBuilder
+                                .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getProducto(id))
+                                .withSelfRel(),
+                        WebMvcLinkBuilder
+                                .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getProductosList())
+                                .withRel(PRODUCTOS));
+
+                return ResponseEntity.ok(productoRes);
+
+            } else {
                 return ResponseEntity.badRequest().body(
                         new ResponseDTO(HttpStatus.BAD_REQUEST.value(), "No existe el producto con el id " + id));
-
-            return ResponseEntity.ok(producto.get());
+            }
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
@@ -68,10 +96,22 @@ public class ProductoController {
                     HttpStatus.BAD_REQUEST.value(), "Debe ingresar la categoría del producto"));
 
         try {
-            return ResponseEntity.ok(_service.createProducto(producto));
+
+            var nuevoProd = service.createProducto(producto);
+
+            var productoRes = EntityModel.of(nuevoProd,
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getProducto(nuevoProd.getId()))
+                            .withSelfRel(),
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getProductosList())
+                            .withRel(PRODUCTOS));
+
+            return ResponseEntity.ok(productoRes);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
+
         }
     }
 
@@ -83,7 +123,19 @@ public class ProductoController {
                     HttpStatus.BAD_REQUEST.value(), "Nombre de producto no puede estar vacío"));
 
         try {
-            return ResponseEntity.ok(_service.updateProducto(id, producto));
+
+            var actualizaProd = service.updateProducto(id, producto);
+
+            var productoRes = EntityModel.of(actualizaProd,
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getProducto(id))
+                            .withSelfRel(),
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getProductosList())
+                            .withRel(PRODUCTOS));
+
+            return ResponseEntity.ok(productoRes);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
@@ -93,7 +145,7 @@ public class ProductoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteProducto(@PathVariable Long id) {
         try {
-            _service.deleteProducto(id);
+            service.deleteProducto(id);
             return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "Categoría eliminada."));
 
         } catch (Exception e) {
