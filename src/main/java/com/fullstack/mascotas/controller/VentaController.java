@@ -4,8 +4,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,27 +35,54 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class VentaController {
 
     @Autowired
-    IVentaService ventaService;
+    IVentaService service;
+
+    private static final String VENTAS = "lista-ventas";
 
     @GetMapping
     public ResponseEntity<Object> getVentasList() {
-        List<Venta> ventas = ventaService.getAllVentas();
-        if (!ventas.isEmpty())
-            return ResponseEntity.ok(ventas.stream().map(Venta::toDto).toList());
-        else
+        List<Venta> ventas = service.getAllVentas();
+        if (!ventas.isEmpty()) {
+
+            var ventaRes = ventas.stream()
+                    .map(Venta::toDto)
+                    .map(cat -> EntityModel.of(cat,
+                            WebMvcLinkBuilder
+                                    .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVenta(cat.getId()))
+                                    .withSelfRel()))
+                    .collect(Collectors.toList());
+
+            WebMvcLinkBuilder linkTo = WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVentasList());
+
+            return ResponseEntity.ok(CollectionModel.of(ventaRes, linkTo.withRel("ventas")));
+
+        } else {
             return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "No hay ventas ingresadas"));
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getVenta(@PathVariable Long id) {
         try {
-            Optional<Venta> venta = ventaService.getVentaById(id);
+            Optional<Venta> venta = service.getVentaById(id);
 
-            if (!venta.isPresent())
+            if (venta.isPresent()) {
+
+                var ventaRes = EntityModel.of(venta.get(),
+                        WebMvcLinkBuilder
+                                .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVenta(id))
+                                .withSelfRel(),
+                        WebMvcLinkBuilder
+                                .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVentasList())
+                                .withRel(VENTAS));
+
+                return ResponseEntity.ok(ventaRes);
+
+            } else {
                 return ResponseEntity.badRequest().body(
                         new ResponseDTO(HttpStatus.BAD_REQUEST.value(), "No existe la venta con el id " + id));
-
-            return ResponseEntity.ok(venta.get());
+            }
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
@@ -75,15 +106,32 @@ public class VentaController {
             month = monthParam != null ? Integer.parseInt(monthParam) : 0;
             day = dayParam != null ? Integer.parseInt(dayParam) : 0;
 
-            ventas = ventaService.getVentasByDate(year, month, day);
+            ventas = service.getVentasByDate(year, month, day);
 
-            if (!ventas.isEmpty())
-                return ResponseEntity.ok(
+            if (!ventas.isEmpty()) {
+
+                var ventaRes = ventas.stream()
+                        .map(Venta::toDto)
+                        .map(cat -> EntityModel.of(cat,
+                                WebMvcLinkBuilder
+                                        .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVenta(cat.getId()))
+                                        .withSelfRel()))
+                        .collect(Collectors.toList());
+
+                var ganancia = ResponseEntity.ok(
                         new GananciasDto(
                                 ventas.size(),
                                 ventas.stream().mapToLong(Venta::getTotal).sum(),
-                                ventas.stream().map(Venta::toDto).toList()));
-            else
+                                ventaRes));
+
+                var gananciaRes = EntityModel.of(ganancia,
+                        WebMvcLinkBuilder
+                                .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVentasList())
+                                .withRel(VENTAS));
+
+                return ResponseEntity.ok(gananciaRes);
+
+            } else
                 return ResponseEntity.ok("No hay ventas registradas en el rango solicitado");
 
         } catch (Exception ex) {
@@ -102,7 +150,18 @@ public class VentaController {
                     HttpStatus.BAD_REQUEST.value(), "Detalle de venta no puede estar vacío"));
 
         try {
-            return ResponseEntity.ok(ventaService.createVenta(venta));
+            var nuevaVenta = service.createVenta(venta);
+
+            var ventaRes = EntityModel.of(nuevaVenta,
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVenta(nuevaVenta.getId()))
+                            .withSelfRel(),
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVentasList())
+                            .withRel(VENTAS));
+
+            return ResponseEntity.ok(ventaRes);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
@@ -120,7 +179,18 @@ public class VentaController {
                     HttpStatus.BAD_REQUEST.value(), "Detalle de venta no puede estar vacío"));
 
         try {
-            return ResponseEntity.ok(ventaService.updateVenta(id, venta));
+            var actualizaVenta = service.updateVenta(id, venta);
+
+            var ventaRes = EntityModel.of(actualizaVenta,
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVenta(id))
+                            .withSelfRel(),
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getVentasList())
+                            .withRel(VENTAS));
+
+            return ResponseEntity.ok(ventaRes);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
@@ -130,7 +200,7 @@ public class VentaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteVenta(@PathVariable Long id) {
         try {
-            ventaService.deleteVenta(id);
+            service.deleteVenta(id);
             return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "Venta eliminada."));
 
         } catch (Exception e) {
