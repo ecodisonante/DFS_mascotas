@@ -1,7 +1,9 @@
 package com.fullstack.mascotas.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import org.springframework.hateoas.RepresentationModel;
 
@@ -18,6 +20,8 @@ import jakarta.persistence.Table;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "producto")
 public class Producto extends RepresentationModel<Producto> {
 

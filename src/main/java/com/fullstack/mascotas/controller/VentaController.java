@@ -132,10 +132,12 @@ public class VentaController {
                 return ResponseEntity.ok(gananciaRes);
 
             } else
-                return ResponseEntity.ok("No hay ventas registradas en el rango solicitado");
+                return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(),
+                        "No hay ventas registradas en el rango solicitado"));
 
         } catch (Exception ex) {
-            return ResponseEntity.badRequest().body("Parametros incorrectos");
+            return ResponseEntity.badRequest().body(new ResponseDTO(HttpStatus.BAD_REQUEST.value(),
+                    "Parametros incorrectos"));
         }
 
     }
@@ -163,13 +165,13 @@ public class VentaController {
             return ResponseEntity.ok(ventaRes);
 
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ResponseDTO(
+            return ResponseEntity.internalServerError().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> putMethodName(@PathVariable Long id, @RequestBody Venta venta) {
+    public ResponseEntity<Object> updateVenta(@PathVariable Long id, @RequestBody Venta venta) {
         // validar datos
         if (venta.getFecha() == null)
             return ResponseEntity.badRequest().body(new ResponseDTO(

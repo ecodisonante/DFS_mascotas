@@ -13,14 +13,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "venta")
-public class Venta extends RepresentationModel<Venta> {
+public class Venta extends RepresentationModel  <Venta> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
