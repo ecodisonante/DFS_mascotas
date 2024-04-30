@@ -2,8 +2,12 @@ package com.fullstack.mascotas.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,44 +29,82 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class CategoriaController {
 
     @Autowired
-    ICategoriaService _service;
+    ICategoriaService service;
+
+    private static final String CATEGORIAS = "lista-categorias";
 
     @GetMapping
     public ResponseEntity<Object> getCategoriasList() {
-        List<Categoria> categorias = _service.getAllCategorias();
+        List<Categoria> categorias = service.getAllCategorias();
 
-        if (!categorias.isEmpty())
-            return ResponseEntity.ok(categorias);
-        else
+        if (!categorias.isEmpty()) {
+
+            var categoriaRes = categorias.stream()
+                    .map(cat -> EntityModel.of(cat,
+                            WebMvcLinkBuilder
+                                    .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getCategoria(cat.getId()))
+                                    .withSelfRel()))
+                    .collect(Collectors.toList());
+
+            WebMvcLinkBuilder linkTo = WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getCategoriasList());
+
+            return ResponseEntity.ok(CollectionModel.of(categoriaRes, linkTo.withRel("categorias")));
+
+        } else
             return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "No hay categorias ingresadas"));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getCategoria(@PathVariable Long id) {
         try {
-            Optional<Categoria> categoria = _service.getCategoriaById(id);
+            Optional<Categoria> categoria = service.getCategoriaById(id);
 
-            if (!categoria.isPresent())
+            if (categoria.isPresent()) {
+
+                var categoriaRes = EntityModel.of(categoria.get(),
+                        WebMvcLinkBuilder
+                                .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getCategoria(id))
+                                .withSelfRel(),
+                        WebMvcLinkBuilder
+                                .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getCategoriasList())
+                                .withRel(CATEGORIAS));
+
+                return ResponseEntity.ok(categoriaRes);
+
+            } else {
                 return ResponseEntity.badRequest().body(
                         new ResponseDTO(HttpStatus.BAD_REQUEST.value(), "No existe la categoria con el id " + id));
-
-            return ResponseEntity.ok(categoria.get());
+            }
 
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ResponseDTO(
+            return ResponseEntity.internalServerError().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
         }
     }
 
     @PostMapping
     public ResponseEntity<Object> createCategoria(@RequestBody Categoria categoria) {
-        //validar que exista el nombre
+
+        // validar que exista el nombre
         if (categoria.getNombre() == null || categoria.getNombre().isBlank())
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.BAD_REQUEST.value(), "Nombre de categoria no puede estar vacío"));
 
         try {
-            return ResponseEntity.ok(_service.createCategoria(categoria));
+
+            var nuevaCat = service.createCategoria(categoria);
+
+            var categoriaRes = EntityModel.of(nuevaCat,
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getCategoria(nuevaCat.getId()))
+                            .withSelfRel(),
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getCategoriasList())
+                            .withRel(CATEGORIAS));
+
+            return ResponseEntity.ok(categoriaRes);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
@@ -71,13 +113,25 @@ public class CategoriaController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Object> putMethodName(@PathVariable Long id, @RequestBody Categoria categoria) {
-        //validar que exista el nombre
+        // validar que exista el nombre
         if (categoria.getNombre() == null || categoria.getNombre().isBlank())
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.BAD_REQUEST.value(), "Nombre de categoria no puede estar vacío"));
 
         try {
-            return ResponseEntity.ok(_service.updateCategoria(id, categoria));
+
+            var actualizaCat = service.updateCategoria(id, categoria);
+
+            var categoriaRes = EntityModel.of(actualizaCat,
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getCategoria(id))
+                            .withSelfRel(),
+                    WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getCategoriasList())
+                            .withRel(CATEGORIAS));
+
+            return ResponseEntity.ok(categoriaRes);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
@@ -87,7 +141,7 @@ public class CategoriaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteCategoria(@PathVariable Long id) {
         try {
-            _service.deleteCategoria(id);
+            service.deleteCategoria(id);
             return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "Categoría eliminada."));
 
         } catch (Exception e) {
